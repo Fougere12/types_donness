@@ -55,23 +55,28 @@ type 'a option =
 None
 | Some of 'a;;
 
-let rec lookg (env : var_environment) (var : vname) = match env.globals with 
+let rec look (env : (vname * tp) list) (var : vname) = match env with 
           |[] -> None
-          |(c,v)::l -> if c = var then (Some var) else look env var;;
+          |(c,v)::l -> if c = var then (Some v) else look l var;;
 
-let rec lookl (env : var_environment) (var : vname) = match env.locals with 
-          |[] -> None
-          |(c,v)::l -> if c = var then (Some var) else look env var;;
 
 exception Variable_inexistante;;
+exception Erreur_type;;
+
+let rec compatible ( b : binop) (t1 : tp) (t2 : tp) = match b with 
+                    | BArith ba -> if t1 = t2 then t1 else raise Erreur_type
+                    | BBool bb -> if t1 = t2 && t1 = UnionT([BoolT]) then UnionT([BoolT]) else raise Erreur_type
+                    | BCompar bc -> if t1 = t2 then UnionT([BoolT]) else raise Erreur_type;;
 
 let rec tp_expr (env : environment) (exp : expr) : tp = match exp with
-              | Const (v) -> tp_const(v)
-              | VarE (v) -> let looking = (lookg s env.dyn_vars) in (match looking with
-	                                        |None -> raise Variable_inexistante 
+              | Const (v) -> UnionT ([tp_const(v)])
+              | VarE (v) -> let looking = (look env.dyn_vars.locals v) in (match looking with
+	                                        |None -> (let looking2 = (look env.dyn_vars.globals v) in (match looking2 with
+	                                                |None -> raise Variable_inexistante 
+	                                                |Some t -> t ))
 	                                        |Some t -> t )
-              |BinOp -> 
-              |CallE -> 
+              |BinOp (b, e1, e2) -> (compatible b (tp_expr env e1) (tp_expr env e1))
+              (*|CallE -> *)
 
 let rec tp_stmt ((env, t, returned) : (environment * tp * bool)) s = match s with 
               | Block [Assign(v,e)] -> let t = tp_expr env e in Printf.printf "Type: %s\n"(Lang.show_tp t);true
