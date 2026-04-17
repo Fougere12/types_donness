@@ -25,7 +25,29 @@ type environment = {
   [@@deriving show]
 
 
-let rec tp_stmt ((env, t, returned) : (environment * tp * bool)) s = true
+let rec tp_stmt ((env, t, returned) : (environment * tp * bool)) s = match s with 
+              | Block [Assign(v,e)] -> let t = tp_expr env e in Printf.printf "Type: %s\n"(Lang.show_tp t);true
+              |_ -> Printf.printf"type inconnu \n";true
+
+(* expr :
+  Const of value                           (* constant *)
+  | VarE of vname                            (* variable *)
+  | BinOp of  binop * expr * expr            (* binary operation *)
+  | CallE of vname * (expr list)             (* function call *)
+  [@@deriving show]
+  
+   value :
+  BoolV of bool
+  | IntV of int
+  | FloatV of float
+  | NoneV
+  | StringV of string*)
+
+let tp_const v = match v with |BoolV(b) -> BoolT | IntV(i) -> IntT | FloatV(f) -> FloatT | StringV(s) -> StringT
+
+let rec tp_expr (env : environment) (exp : expr) : tp = match exp with
+              | Const (v) -> tp_const(v)
+
 let tp_fundefn init_env (Fundefn(Fundecl(fn, pards, rt), vds, s)) = true
 
   (* Function declarations of library / predefined functions *)
