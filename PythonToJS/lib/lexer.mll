@@ -17,6 +17,7 @@
 
 }
 
+(* test *)
 
 let comment = '#' [^'\n']*
 let alphus =           ['a'-'z''A'-'Z''_']
