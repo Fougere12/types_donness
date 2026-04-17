@@ -24,7 +24,7 @@ type environment = {
     }
   [@@deriving show]
 
-
+ (*test*)
 let rec tp_stmt ((env, t, returned) : (environment * tp * bool)) s = match s with 
               | Block [Assign(v,e)] -> let t = tp_expr env e in Printf.printf "Type: %s\n"(Lang.show_tp t);true
               |_ -> Printf.printf"type inconnu \n";true
