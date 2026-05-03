@@ -17,7 +17,7 @@ type var_environment = {
    curfun: current function (when within a function). Only for purposes of error messages.
  *)
 type environment = { 
-    fdecls: (vname * ((tp list) * tp)) list; 
+    fdecls: (fname * ((tp list) * tp)) list;
     static_vars: var_environment;
     dyn_vars: var_environment;
     curfun: fname option;
@@ -55,13 +55,17 @@ type 'a option =
 None
 | Some of 'a;;
 
-let rec look (env : (vname * tp) list) (var : vname) = match env with 
+let rec look (env : (fname * tp) list) (var : vname) = match env with 
           |[] -> None
           |(c,v)::l -> if c = var then (Some v) else look l var;;
 
+let rec look2 (env : (vname * ((tp list) * tp)) list ) (var : fname) = match env with 
+          |[] -> None
+          |(f,tl,t)::l -> if f = var && t != [] then (Some t) else look2 l var;;
 
 exception Variable_inexistante;;
 exception Erreur_type;;
+exception Fonction_non_def;;
 
 let rec compatible ( b : binop) (t1 : tp) (t2 : tp) = match b with 
                     | BArith ba -> if t1 = t2 then t1 else raise Erreur_type
@@ -76,19 +80,26 @@ let rec tp_expr (env : environment) (exp : expr) : tp = match exp with
 	                                                |Some t -> t ))
 	                                        |Some t -> t )
               |BinOp (b, e1, e2) -> (compatible b (tp_expr env e1) (tp_expr env e1))
-              (*|CallE -> *)
+              |CallE (v,l) -> let looking = (look2 env.fdecls v) in (match looking with
+	                                        |None -> raise Fonction_non_def
+	                                        |Some t -> t )
 
-let rec tp_stmt ((env, t, returned) : (environment * tp * bool)) s = match s with 
-              | Block [Assign(v,e)] -> let t = tp_expr env e in Printf.printf "Type: %s\n"(Lang.show_tp t);true
+exception Code_inatteignable
+exception Variable_pas_instancie
+
+let rec tp_stmt ((env, t, returned) : (environment * tp * bool)) stm : (environment * tp * bool) = match (stm,returned) with 
+              | (_,True) -> raise Code_inatteignable
+              | (Block l,False) -> (List.map (tp_stmt) (l)) in (environment * tp * bool)
+              | (Assign (v,ex),False) -> (let type = let looking = (look env.static_vars.locals v) in (match looking with
+	                                        |None -> (let looking2 = (look env.static_vars.globals v) in (match looking2 with
+	                                                |None -> raise Variable_inexistante 
+	                                                |Some t -> t ))
+	                                        |Some t -> t ) ) in if inclu (tp_expr ex) (type) then ??? else raise Variable_pas_instancie (*inclu a définir*)
               |_ -> Printf.printf"type inconnu \n";true
 
 
-              
 
-
-
-
-let tp_fundefn init_env (Fundefn(Fundecl(fn, pards, rt), vds, s)) = true
+let tp_fundefn (env_init : environment) (funn : (Fundecl(fn, pards, rt), vds, s)) = true
 
   (* Function declarations of library / predefined functions *)
 let library_fds = [
@@ -98,10 +109,17 @@ let library_fds = [
   ; ("str",   ([UnionT[BoolT; FloatT; IntT; StringT]], UnionT[StringT]))
   ]
 
+let maj_env_fonc (list_fonc : fundefn list) = match list_fonc with 
+                  |[] -> []
+                  |((Fundecl(fn, pards, rt), vds, s))::reste ->let init_env = 
+                                { fdecls = [] @ library_fds; static_vars = { globals = []; locals = [] }; dyn_vars = { globals = []; locals = [] }; curfun = None } in
+                                if (tp_fundefn (init_env) ((Fundecl(fn, pards, rt), vds, s))) then [(fn,pards,rt)]::maj_env_fonc (reste);;
+                   
+
 (* The following has to be defined in detail *)
 let tp_prog (Prog(fdefns, vds, s)) = 
-  let fds = [] in
-  let globs = [] in
+  let fds = (maj_env_fonc fdefns) in
+  let globs = vds in
   let init_venv = { globals = globs; locals = [] } in 
   let init_env = 
     { fdecls = fds @ library_fds; static_vars = init_venv; dyn_vars = init_venv; curfun = None } in
