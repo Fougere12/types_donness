@@ -68,7 +68,7 @@ let rec appartient (liste : base_tp list) (element : base_tp)  = match liste wit
   |[] -> false
   |a::l -> if ((element = a) || (element = IntT && a = FloatT) || (element  = BoolT && (a = IntT || a = FloatT))) then true else appartient (l) (element) ;;
 
-let inclu (expression: UnionT(m) (general : UnionT(l))  = total (List.map (appartient (l)) (m))
+let inclu (expression: tp) (general : tp) = total (let UnionT(m) = expression in let UnionT(l) = general in (List.map (appartient (l)) (m)))
 
 
 exception Variable_inexistante;;
