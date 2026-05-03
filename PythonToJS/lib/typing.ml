@@ -61,9 +61,9 @@ let rec look (env : (vname * tp) list) (var : vname) = match env with
 
 let rec look2 (env : (fname * ((tp list) * tp)) list) (var : fname) = match env with 
           |[] -> None
-          |(f,tl)::l -> if f = var && tl != [] then (Some tl) else ( look2 l var );;
+          |(f,tl)::l -> if f = var then (Some tl) else ( look2 l var );;
 
-let rec total (liste : base_tp list) = match liste with |[] -> true | a::m -> if a then total (m) else false
+let rec total (liste :bool list) = match liste with |[] -> true | a::m -> if (a) then total (m) else false
 let rec appartient (liste : base_tp list) (element : base_tp)  = match liste with
   |[] -> false
   |a::l -> if ((element = a) || (element = IntT && a = FloatT) || (element  = BoolT && (a = IntT || a = FloatT))) then true else appartient (l) (element) ;;
@@ -91,7 +91,7 @@ let rec tp_expr (env : environment) (exp : expr) : tp = match exp with
               |BinOp (b, e1, e2) -> (compatible b (tp_expr env e1) (tp_expr env e1))
               |CallE (v,l) -> let looking = (look2 env.fdecls v) in (match looking with
 	                                        |None -> raise Fonction_non_def
-	                                        |Some (tplist, tpretour) -> if (inclu (List.map (tp_expr) (l)) (tplist)) then tpretour else raise Argument_incorect)
+	                                        |Some (tplist, tpretour) -> if (inclu (List.map tp_expr l) (tplist)) then tpretour else raise Argument_incorect)
 
 exception Code_inatteignable
 exception Variable_pas_instancie
@@ -104,26 +104,20 @@ let rec etape ((env, retour, returnn) : (environment * tp * bool)) liste = match
 let rec tp_stmt ((env, t, returned) : (environment * tp * bool)) stm : (environment * tp * bool) = match (stm,returned) with 
               | (_,true) -> raise Code_inatteignable
               | (Block l,false) -> (etape (env, t, returned) (l))
-              | (Assign (v,ex),false) -> let tipe = let looking = (look env.static_vars.locals v) in (match looking with
+            (*   | (Assign (v,ex),false) -> let tipe = let looking = (look env.static_vars.locals v) in (match looking with
 	                                        |None -> (let looking2 = (look env.static_vars.globals v) in (match looking2 with
 	                                                |None -> raise Variable_inexistante 
 	                                                |Some t -> t ))
 	                                        |Some t -> t )  
-                                        in if inclu (tp_expr ex) (tipe) then let new_dyn_vars = match env.static_vars.locals v with
-                                                  | Some _ -> {env.dyn_vars.locals with locals = (v,type_v) :: env.dyn_vars.locals}
-                                                  | None -> {env.dyn_vars.globals with globals = (v,type_v) :: env.dyn_vars.globals}
-                                              in let new_env = { env with dyn_vars = new_dyn_vars } in (new_env, t, false)
-											  else raise Variable_pas_instancie
+                                       in if inclu (tp_expr ex) (tipe) then ??? else raise Variable_pas_instancie 
               |
-			  |CallS (vn, explist) -> let looking = (look2 env.fdecls vn) in (match looking with
-	                                        |None -> raise Fonction_non_def
-	                                        |Some (tplist, tpretour) -> if (inclu (List.map (tp_expr) (explist)) (tplist)) then (env, t, returned) else raise Argument_incorect)
+              |CallS (vn, explist) -> *)
               |_ -> Printf.printf"type inconnu \n";true
 
 			
 
 
-let tp_fundefn (env_init : environment) (funn : (Fundecl(fn, pards, rt), vds, s)) = let retour = (tp_stmt (env_init) (s) ) in (inclu retour rt);;
+let tp_fundefn (env_init : environment) (funn : (fundecl * (vardecl list) * stmt)) = let (f, vds, s ) =funn in let (fn, pards, rt) = f in let retour = (tp_stmt (env_init) (s) ) in (inclu retour rt);;
 
   (* Function declarations of library / predefined functions *)
 let library_fds = [
