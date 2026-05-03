@@ -102,7 +102,11 @@ let rec tp_stmt ((env, t, returned) : (environment * tp * bool)) stm : (environm
 	                                                |None -> raise Variable_inexistante 
 	                                                |Some t -> t ))
 	                                        |Some t -> t )  
-                                        in if inclu (tp_expr ex) (type) then ??? else raise Variable_pas_instancie (*inclu a définir*)
+                                        in if inclu (tp_expr ex) (type) then let new_dyn_vars = match look env.static_vars.locals v with
+                                                  | Some _ -> {env.dyn_vars.locals with locals = (v,type_v) :: env.dyn_vars.locals
+                                                  | None -> {env.dyn_vars.locals with globals = (v,type_v) :: env.dyn_vars.globals
+                                              in let new_env = { env with dyn_vars = new_dyn_vars } in (new_env, t, false)
+											  else raise Variable_pas_instancie (*inclu a définir*)
               |
               |CallS (vn, explist) -> 
               |_ -> Printf.printf"type inconnu \n";true
