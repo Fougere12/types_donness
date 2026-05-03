@@ -113,9 +113,11 @@ let rec tp_stmt ((env, t, returned) : (environment * tp * bool)) stm : (environm
                                                   | Some _ -> {env.dyn_vars.locals with locals = (v,type_v) :: env.dyn_vars.locals
                                                   | None -> {env.dyn_vars.locals with globals = (v,type_v) :: env.dyn_vars.globals
                                               in let new_env = { env with dyn_vars = new_dyn_vars } in (new_env, t, false)
-											  else raise Variable_pas_instancie (*inclu a définir*)
+											  else raise Variable_pas_instancie
               |
-              |CallS (vn, explist) -> 
+			  |CallS (vn, explist) -> let looking = (look2 env.fdecls vn) in (match looking with
+	                                        |None -> raise Fonction_non_def
+	                                        |Some (tplist, tpretour) -> if (inclu (List.map (tp_expr) (explist)) (tplist)) then (env, t, returned) else raise Argument_incorect)
               |_ -> Printf.printf"type inconnu \n";true
 
 			
