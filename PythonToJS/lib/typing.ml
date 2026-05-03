@@ -103,13 +103,13 @@ let rec etape ((env, retour, returnn) : (environment * tp * bool)) liste = match
 
 let rec tp_stmt ((env, t, returned) : (environment * tp * bool)) stm : (environment * tp * bool) = match (stm,returned) with 
               | (_,true) -> raise Code_inatteignable
-              | (Block l,false) -> (etape (env, t, returned) (l)) in (environment * tp * bool)
-              | (Assign (v,ex),false) -> let type = (let looking = (look env.static_vars.locals v)) in (match looking with
+              | (Block l,false) -> (etape (env, t, returned) (l))
+              | (Assign (v,ex),false) -> let tipe = let looking = (look env.static_vars.locals v) in (match looking with
 	                                        |None -> (let looking2 = (look env.static_vars.globals v) in (match looking2 with
 	                                                |None -> raise Variable_inexistante 
 	                                                |Some t -> t ))
 	                                        |Some t -> t )  
-                                        in if inclu (tp_expr ex) (type) then let new_dyn_vars = match env.static_vars.locals v with
+                                        in if inclu (tp_expr ex) (tipe) then let new_dyn_vars = match env.static_vars.locals v with
                                                   | Some _ -> {env.dyn_vars.locals with locals = (v,type_v) :: env.dyn_vars.locals}
                                                   | None -> {env.dyn_vars.globals with globals = (v,type_v) :: env.dyn_vars.globals}
                                               in let new_env = { env with dyn_vars = new_dyn_vars } in (new_env, t, false)
