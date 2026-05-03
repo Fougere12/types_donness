@@ -42,7 +42,7 @@ let doc_of_var_list vs = parens (separate_map comma string vs)
 
 
 let rec doc_of_stmt s = match s with 
-  | Block sl -> nest indent_level (separate hardline (List.map doc_of_stmt sl))
+  | Block sl -> separate hardline (List.map doc_of_stmt sl)
   | Assign(v, e) -> doc_of_var v ^^ space ^^ string "=" ^^ space ^^ doc_of_expr e ^^ string ";"
   | Cond(e,s1,s2) ->
     string "if (" ^^ doc_of_expr e ^^ string ") {" ^^ hardline ^^
