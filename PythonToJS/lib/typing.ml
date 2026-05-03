@@ -87,14 +87,19 @@ let rec tp_expr (env : environment) (exp : expr) : tp = match exp with
 exception Code_inatteignable
 exception Variable_pas_instancie
 
+let rec etape ((env, retour, retour) : (environment * tp * bool)) liste = match liste with 
+          |[] -> (env, retour, retour)
+          |stm::l -> etape (tp_stmt stm) (l) ;;
+
 let rec tp_stmt ((env, t, returned) : (environment * tp * bool)) stm : (environment * tp * bool) = match (stm,returned) with 
-              | (_,True) -> raise Code_inatteignable
-              | (Block l,False) -> (List.map (tp_stmt) (l)) in (environment * tp * bool)
-              | (Assign (v,ex),False) -> (let type = let looking = (look env.static_vars.locals v) in (match looking with
+              | (_,true) -> raise Code_inatteignable
+              | (Block l,false) -> (etape (env, t, returned) (l)) in (environment * tp * bool)
+              | (Assign (v,ex),false) -> let type = (let looking = (look env.static_vars.locals v)) in (match looking with
 	                                        |None -> (let looking2 = (look env.static_vars.globals v) in (match looking2 with
 	                                                |None -> raise Variable_inexistante 
 	                                                |Some t -> t ))
-	                                        |Some t -> t ) ) in if inclu (tp_expr ex) (type) then ??? else raise Variable_pas_instancie (*inclu a définir*)
+	                                        |Some t -> t )  
+                                        in if inclu (tp_expr ex) (type) then ??? else raise Variable_pas_instancie (*inclu a définir*)
               |_ -> Printf.printf"type inconnu \n";true
 
 
