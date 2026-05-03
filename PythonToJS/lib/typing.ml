@@ -62,7 +62,14 @@ let rec look (env : (vname * tp) list) (var : vname) = match env with
 let rec look2 (env : (fname * ((tp list) * tp)) list) (var : fname) = match env with 
           |[] -> None
           |(f,tl)::l -> if f = var && tl != [] then (Some tl) else ( look2 l var );;
-  
+
+let rec total (liste : base_tp list) = match liste with |[] -> true | a::m -> if a then total (m) else false
+let rec appartient (liste : base_tp list) (element : base_tp)  = match liste with
+  |[] -> false
+  |a::l -> if ((element = a) || (element = IntT && a = FloatT) || (element  = BoolT && (a = IntT || a = FloatT))) then true else appartient (l) (element) ;;
+
+let inclu (expression: UnionT(m) (general : UnionT(l))  = total (List.map (appartient (l)) (m))
+
 
 exception Variable_inexistante;;
 exception Erreur_type;;
@@ -107,6 +114,7 @@ let rec tp_stmt ((env, t, returned) : (environment * tp * bool)) stm : (environm
               |CallS (vn, explist) -> 
               |_ -> Printf.printf"type inconnu \n";true
 
+			
 
 
 let tp_fundefn (env_init : environment) (funn : (Fundecl(fn, pards, rt), vds, s)) = let retour = (tp_stmt (env_init) (s) ) in (inclu retour rt);;
