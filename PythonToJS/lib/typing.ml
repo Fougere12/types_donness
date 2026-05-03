@@ -99,10 +99,18 @@ let rec tp_stmt ((env, t, returned) : (environment * tp * bool)) stm : (environm
 	                                                |None -> raise Variable_inexistante 
 	                                                |Some t -> t ))
 	                                        |Some t -> t )  
-                                        in if inclu (tp_expr ex) (type) then ??? else raise Variable_pas_instancie (*inclu a définir*)
+                                        in if inclu (tp_expr ex) (type) then ??? else raise Variable_pas_instancie 
               |
               |_ -> Printf.printf"type inconnu \n";true
 
+
+let rec total liste = match liste with |[] -> true | a::m -> if a then total (m) else false
+
+let rec appartient liste element  = match liste with
+  |[] -> false
+  |a::l -> if ((element = a) || (element = IntT && a = FloatT) || (element  = BoolT && (a = IntT || a = FloatT))) then true else appartient (l) (element)
+
+let inclu expression general  = total (List.map (appartient (general)) (expression))
 
 
 let tp_fundefn (env_init : environment) (funn : (Fundecl(fn, pards, rt), vds, s)) = let retour = (tp_stmt (env_init) (s) ) in (inclu retour rt);;
