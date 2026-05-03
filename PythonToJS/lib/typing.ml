@@ -62,10 +62,12 @@ let rec look (env : (vname * tp) list) (var : vname) = match env with
 let rec look2 (env : (fname * ((tp list) * tp)) list) (var : fname) = match env with 
           |[] -> None
           |(f,tl)::l -> if f = var && tl != [] then (Some tl) else ( look2 l var );;
+  
 
 exception Variable_inexistante;;
 exception Erreur_type;;
 exception Fonction_non_def;;
+exception Argument_incorect;;
 
 let rec compatible ( b : binop) (t1 : tp) (t2 : tp) = match b with 
                     | BArith ba -> if t1 = t2 then t1 else raise Erreur_type
@@ -82,10 +84,11 @@ let rec tp_expr (env : environment) (exp : expr) : tp = match exp with
               |BinOp (b, e1, e2) -> (compatible b (tp_expr env e1) (tp_expr env e1))
               |CallE (v,l) -> let looking = (look2 env.fdecls v) in (match looking with
 	                                        |None -> raise Fonction_non_def
-	                                        |Some t -> t )
+	                                        |Some (tplist, tpretour) -> if (inclu (List.map (tp_expr) (l)) (tplist)) then tpretour else raise Argument_incorect)
 
 exception Code_inatteignable
 exception Variable_pas_instancie
+exception Fonction_mal_def
 
 let rec etape ((env, retour, returnn) : (environment * tp * bool)) liste = match liste with 
           |[] -> (env, retour, returnn)
@@ -99,18 +102,11 @@ let rec tp_stmt ((env, t, returned) : (environment * tp * bool)) stm : (environm
 	                                                |None -> raise Variable_inexistante 
 	                                                |Some t -> t ))
 	                                        |Some t -> t )  
-                                        in if inclu (tp_expr ex) (type) then ??? else raise Variable_pas_instancie 
+                                        in if inclu (tp_expr ex) (type) then ??? else raise Variable_pas_instancie (*inclu a définir*)
               |
+              |CallS (vn, explist) -> 
               |_ -> Printf.printf"type inconnu \n";true
 
-
-let rec total liste = match liste with |[] -> true | a::m -> if a then total (m) else false
-
-let rec appartient liste element  = match liste with
-  |[] -> false
-  |a::l -> if ((element = a) || (element = IntT && a = FloatT) || (element  = BoolT && (a = IntT || a = FloatT))) then true else appartient (l) (element)
-
-let inclu expression general  = total (List.map (appartient (general)) (expression))
 
 
 let tp_fundefn (env_init : environment) (funn : (Fundecl(fn, pards, rt), vds, s)) = let retour = (tp_stmt (env_init) (s) ) in (inclu retour rt);;
@@ -126,8 +122,11 @@ let library_fds = [
 let maj_env_fonc (list_fonc : fundefn list) = match list_fonc with 
                   |[] -> []
                   |((Fundecl(fn, pards, rt), vds, s))::reste ->let init_env = 
-                                {fdecls = [] @ library_fds; static_vars = { globals = pards; locals = vds }; dyn_vars = { globals = []; locals = [] }; curfun = None } in
-                                if (tp_fundefn (init_env) ((Fundecl(fn, pards, rt), vds, s))) then [(fn,pards,rt)]::maj_env_fonc (reste);;
+                                {fdecls = [] @ library_fds; static_vars = { globals = []; locals = pards @ vds }; dyn_vars = { globals = []; locals = pards @ vds}; curfun = None } 
+                              in
+                                if duplicate_free (List.map fst init_env.static_vars.locals) && (tp_fundefn (init_env) ((Fundecl(fn, pards, rt), vds, s))) 
+                                    then [(fn,pards,rt)]::maj_env_fonc (reste)
+                                    else raise Fonction_mal_def
                    
 
 (* The following has to be defined in detail *)
