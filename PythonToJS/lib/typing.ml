@@ -55,13 +55,13 @@ type 'a option =
 None
 | Some of 'a;;
 
-let rec look (env : (fname * tp) list) (var : vname) = match env with 
+let rec look (env : (vname * tp) list) (var : vname) = match env with 
           |[] -> None
           |(c,v)::l -> if c = var then (Some v) else look l var;;
 
-let rec look2 (env : (vname * ((tp list) * tp)) list ) (var : fname) = match env with 
+let rec look2 (env : (fname * ((tp list) * tp)) list) (var : fname) = match env with 
           |[] -> None
-          |(f,tl,t)::l -> if f = var && t != [] then (Some t) else look2 l var;;
+          |(f,tl)::l -> if f = var && tl != [] then (Some tl) else ( look2 l var );;
 
 exception Variable_inexistante;;
 exception Erreur_type;;
@@ -100,11 +100,12 @@ let rec tp_stmt ((env, t, returned) : (environment * tp * bool)) stm : (environm
 	                                                |Some t -> t ))
 	                                        |Some t -> t )  
                                         in if inclu (tp_expr ex) (type) then ??? else raise Variable_pas_instancie (*inclu a définir*)
+              |
               |_ -> Printf.printf"type inconnu \n";true
 
 
 
-let tp_fundefn (env_init : environment) (funn : (Fundecl(fn, pards, rt), vds, s)) = true
+let tp_fundefn (env_init : environment) (funn : (Fundecl(fn, pards, rt), vds, s)) = let retour = (tp_stmt (env_init) (s) ) in (inclu retour rt);;
 
   (* Function declarations of library / predefined functions *)
 let library_fds = [
@@ -117,7 +118,7 @@ let library_fds = [
 let maj_env_fonc (list_fonc : fundefn list) = match list_fonc with 
                   |[] -> []
                   |((Fundecl(fn, pards, rt), vds, s))::reste ->let init_env = 
-                                { fdecls = [] @ library_fds; static_vars = { globals = []; locals = [] }; dyn_vars = { globals = []; locals = [] }; curfun = None } in
+                                {fdecls = [] @ library_fds; static_vars = { globals = pards; locals = vds }; dyn_vars = { globals = []; locals = [] }; curfun = None } in
                                 if (tp_fundefn (init_env) ((Fundecl(fn, pards, rt), vds, s))) then [(fn,pards,rt)]::maj_env_fonc (reste);;
                    
 
@@ -132,4 +133,4 @@ let tp_prog (Prog(fdefns, vds, s)) =
     && duplicate_free (List.map fst globs) 
   && List.for_all (tp_fundefn init_env) fdefns
   then tp_stmt (init_env, UnionT[NoneT], false) s
-  else failwith "duplicate function or variable declarations"
+  else failwith "duplicate function or variable declarations";;
