@@ -87,8 +87,8 @@ let rec tp_expr (env : environment) (exp : expr) : tp = match exp with
 exception Code_inatteignable
 exception Variable_pas_instancie
 
-let rec etape ((env, retour, retour) : (environment * tp * bool)) liste = match liste with 
-          |[] -> (env, retour, retour)
+let rec etape ((env, retour, returnn) : (environment * tp * bool)) liste = match liste with 
+          |[] -> (env, retour, returnn)
           |stm::l -> etape (tp_stmt stm) (l) ;;
 
 let rec tp_stmt ((env, t, returned) : (environment * tp * bool)) stm : (environment * tp * bool) = match (stm,returned) with 
