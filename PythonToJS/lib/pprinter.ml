@@ -42,17 +42,17 @@ let doc_of_var_list vs = parens (separate_map comma string vs)
 
 
 let rec doc_of_stmt s = match s with 
-  | Block sl -> nest indent_level (separate hardline (List.map doc_of_stmt sl))
+  | Block sl -> separate hardline (List.map doc_of_stmt sl)
   | Assign(v, e) -> doc_of_var v ^^ space ^^ string "=" ^^ space ^^ doc_of_expr e ^^ string ";"
   | Cond(e,s1,s2) ->
-    string "if (" ^^ doc_of_expr e ^^ string ") {" ^^ hardline ^^
-    nest indent_level (doc_of_stmt s1) ^^ hardline ^^
-    string "} else {" ^^ hardline ^^
-    nest indent_level (doc_of_stmt s2) ^^ hardline ^^
+    nest indent_level (string "if (" ^^ doc_of_expr e ^^ string ") {" ^^ hardline ^^
+    doc_of_stmt s1) ^^ hardline ^^
+    nest indent_level (string "} else {" ^^ hardline ^^
+    doc_of_stmt s2) ^^ hardline ^^
     string "}"
   | While(e,s) ->
-    string "while (" ^^ doc_of_expr e ^^ string ") {" ^^ hardline ^^
-    nest indent_level (doc_of_stmt s) ^^ hardline ^^
+    nest indent_level (string "while (" ^^ doc_of_expr e ^^ string ") {" ^^ hardline ^^
+    doc_of_stmt s) ^^ hardline ^^
     string "}"
   | Return(e) -> string "return " ^^ doc_of_expr e ^^ string ";"
   | CallS ("print", args) -> string "alert" ^^ parens (separate_map comma doc_of_expr args) ^^ string ";"
@@ -64,10 +64,10 @@ let doc_of_global_vardecl (Vardecl(vn,_t)) = string "let" ^^ space ^^ string vn 
 
 
 let doc_of_fundefn (Fundefn(Fundecl(fn, params, _rt), vds, s)) =
-  string "function" ^^ space ^^ string fn ^^
+  nest indent_level (string "function" ^^ space ^^ string fn ^^
   doc_of_var_list (List.map name_of_vardecl params) ^^ space ^^
   string "{" ^^ hardline ^^
-  nest indent_level (
+  
     separate hardline (List.map doc_of_local_vardecl vds) ^^ hardline ^^
     doc_of_stmt s
   ) ^^ hardline ^^
@@ -87,5 +87,4 @@ let doc_of_prog (Prog(fdfs, vds, s)) =
 let print_prog prg =
   ToChannel.pretty 0.5 80 stdout (doc_of_prog prg);
   flush stdout
-
 
