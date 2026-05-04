@@ -1,0 +1,47 @@
+def affectation() -> int:
+  #begin
+  a : int
+  a = 2
+  return a
+  #end
+
+def condition(n : int) -> bool:
+  #begin
+  a : int
+  a = 3
+  if a<n:
+    #begin
+    return true
+    #end
+  else:
+    #begin
+    return true
+    #end
+  #end
+
+def boucle_while(n : int) -> int:
+  #begin
+  a : int
+  a = 0
+  while a<n:
+    #begin  
+    a = a + 1
+    #end
+  #end
+
+def affichage(nom : string) -> None
+  #begin
+  print("bonjour")
+  print(nom)
+  #end
+
+
+
+
+
+
+
+
+
+
+  
