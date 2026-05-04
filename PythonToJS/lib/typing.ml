@@ -106,9 +106,9 @@ let rec replace (env : (vname * tp) list) (var : vname) (typ : expr) : environme
               |[] -> []
               |(name,typp)::l -> if name = var then [(var,(tp_expr typ))]::replace  else [(name,typp)]::replace l var typ
 
-let rec union (t : tp) (g : tp) : tp = let UnionT(l) = t and UnionT(m) = g  match l,m with 
-              |[],[] -> 
-              |
+let rec union (t : tp) (g : tp) : tp = let UnionT(l) = t and UnionT(m) = g  match l with 
+              |[] -> UnionT(m)
+              |a::l -> if appartient (g) (a) then union (UnionT(l)) (g) else union (UnionT(l)) (UnionT([a]::m))
   
 let rec fusion (env : environment) (si : stmt) (alors : stmt) : environment = let (env1, t1, ret1) = tp_stmt (env, UnionT[NoneT],false) (si) and (env2, t2, ret2) = tp_stmt (env, UnionT[NoneT],false) (alors) in
               let fu =  in
