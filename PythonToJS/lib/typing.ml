@@ -114,7 +114,9 @@ let rec tp_stmt ((env, t, returned) : (environment * tp * bool)) stm : (environm
 	                                                |None -> raise Variable_inexistante 
 	                                                |Some t -> t ))
 	                                        |Some t -> t )  
-                                       in if inclu (tp_expr ex) (tipe) then let globa = (replace env.dyn_vars.globals v ex) and loca = (replace env.dyn_vars.locals v ex) in  else raise Variable_pas_instancie 
+                                       in if inclu (tp_expr ex) (tipe) then let globa = (replace env.dyn_vars.globals v ex) and loca = (replace env.dyn_vars.locals v ex) in 
+                                       ({fdecls: env.fdecls;static_vars: env.static_vars;dyn_vars: { globals = globa; locals = loca };curfun: env.curfun;},t,returned)
+                                       else raise Variable_pas_instancie
               |
               |Return (expre) -> (env, (tp_expr expre), true)
               |CallS (vn, explist) -> let looking = (look2 env.fdecls vn) in (match looking with
