@@ -106,6 +106,14 @@ let rec replace (env : (vname * tp) list) (var : vname) (typ : expr) : environme
               |[] -> []
               |(name,typp)::l -> if name = var then [(var,(tp_expr typ))]::replace  else [(name,typp)]::replace l var typ
 
+let rec union (t : tp) (g : tp) : tp = let UnionT(l) = t and UnionT(m) = g  match l,m with 
+              |[],[] -> 
+              |
+  
+let rec fusion (env : environment) (si : stmt) (alors : stmt) : environment = let (env1, t1, ret1) = tp_stmt (env, UnionT[NoneT],false) (si) and (env2, t2, ret2) = tp_stmt (env, UnionT[NoneT],false) (alors) in
+              let fu =  in
+                (fu, union t1 t2, ret1 && ret2)
+
 let rec tp_stmt ((env, t, returned) : (environment * tp * bool)) stm : (environment * tp * bool) = match (stm,returned) with 
               | (_,true) -> raise Code_inatteignable
               | (Block l,false) -> (etape (env, t, returned) (l))
@@ -118,6 +126,7 @@ let rec tp_stmt ((env, t, returned) : (environment * tp * bool)) stm : (environm
                                        ({fdecls: env.fdecls;static_vars: env.static_vars;dyn_vars: { globals = globa; locals = loca };curfun: env.curfun;},t,returned)
                                        else raise Variable_pas_instancie
               |
+			  |Cond (e,s1,s2)  -> if inclu (tp_expr e) UnionT([BoolT]) then (fusion env s1 s2,t,returned) else raise Condition_doit_etre_un_bool
               |Return (expre) -> (env, (tp_expr expre), true)
               |CallS (vn, explist) -> let looking = (look2 env.fdecls vn) in (match looking with
 	                                        |None -> raise Fonction_non_def
