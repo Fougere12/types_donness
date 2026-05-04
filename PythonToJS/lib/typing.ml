@@ -68,7 +68,12 @@ let rec appartient (liste : base_tp list) (element : base_tp)  = match liste wit
   |[] -> false
   |a::l -> if ((element = a) || (element = IntT && a = FloatT) || (element  = BoolT && (a = IntT || a = FloatT))) then true else appartient (l) (element) ;;
 
-let inclu (expression: tp) (general : tp) = total (let UnionT(m) = expression in let UnionT(l) = general in (List.map (appartient (l)) (m)))
+let inclu (general : tp) (expression: tp)= total (let UnionT(m) = expression in let UnionT(l) = general in (List.map (appartient (l)) (m)))
+
+let incluDansChaque (listExpr : tp list)  = function (general : tp list) -> List.map(inclu (general)) (listExpr)
+
+let rec inclu2 (listExpr : tp list) (listGen : tp list) = match listGen with |[] -> true
+                                                     |a::l -> total incluDansChaque listExpr a && inclu2 listExpr l
 
 
 exception Variable_inexistante;;
@@ -122,11 +127,11 @@ let rec tp_stmt ((env, t, returned) : (environment * tp * bool)) stm : (environm
 	                                                |None -> raise Variable_inexistante 
 	                                                |Some t -> t ))
 	                                        |Some t -> t )  
-                                       in if inclu (tp_expr ex) (tipe) then let globa = (replace env.dyn_vars.globals v ex) and loca = (replace env.dyn_vars.locals v ex) in 
+                                       in if inclu (tipe) (tp_expr ex) then let globa = (replace env.dyn_vars.globals v ex) and loca = (replace env.dyn_vars.locals v ex) in 
                                        ({fdecls: env.fdecls;static_vars: env.static_vars;dyn_vars: { globals = globa; locals = loca };curfun: env.curfun;},t,returned)
                                        else raise Variable_pas_instancie
               |
-			  |Cond (e,s1,s2)  -> if inclu (tp_expr e) UnionT([BoolT]) then (fusion env s1 s2,t,returned) else raise Condition_doit_etre_un_bool
+			  |Cond (e,s1,s2)  -> if inclu UnionT([BoolT]) (tp_expr e) then (fusion env s1 s2,t,returned) else raise Condition_doit_etre_un_bool
               |Return (expre) -> (env, (tp_expr expre), true)
               |CallS (vn, explist) -> let looking = (look2 env.fdecls vn) in (match looking with
 	                                        |None -> raise Fonction_non_def
