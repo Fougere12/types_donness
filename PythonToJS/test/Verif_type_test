@@ -52,9 +52,13 @@ def if_correct() -> int:
   #begin
   x : int
   if True:
+    #begin
     x = 3
+    #end
   else:
+    #begin
     x = 4
+    #end
   return x
   #end
 
@@ -63,9 +67,13 @@ def if_incorrect() -> int:            #erreur attendue
   #begin
   x : int
   if True:
+    #begin
     x = 3
+    #end
   else:
+    #begin
     y = 4
+    #end
   return x
   #end
 
@@ -74,7 +82,9 @@ def while_test() -> int:
   #begin
   x : int
   while True:
+    #begin
     x = 3
+    #end
   return x
   #end
 
@@ -90,9 +100,13 @@ def return_simple() -> int:
 def return_incoherent() -> int:          #erreur attendue
   #begin
   if True:
+    #begin
     return 3
+    #end
   else:
+    #begin
     return "hello"
+    #end
   #end
 
 
