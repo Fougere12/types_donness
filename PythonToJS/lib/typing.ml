@@ -109,7 +109,7 @@ let rec replace (env : (vname * tp) list) (var : vname) (typ : expr) : environme
 let rec tp_stmt ((env, t, returned) : (environment * tp * bool)) stm : (environment * tp * bool) = match (stm,returned) with 
               | (_,true) -> raise Code_inatteignable
               | (Block l,false) -> (etape (env, t, returned) (l))
-            (*   | (Assign (v,ex),false) -> let tipe = let looking = (look env.static_vars.locals v) in (match looking with
+              | (Assign (v,ex),false) -> let tipe = let looking = (look env.static_vars.locals v) in (match looking with
 	                                        |None -> (let looking2 = (look env.static_vars.globals v) in (match looking2 with
 	                                                |None -> raise Variable_inexistante 
 	                                                |Some t -> t ))
