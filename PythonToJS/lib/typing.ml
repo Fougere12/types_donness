@@ -101,6 +101,11 @@ let rec etape ((env, retour, returnn) : (environment * tp * bool)) liste = match
           |[] -> (env, retour, returnn)
           |stm::l -> etape (tp_stmt stm) (l) ;;
 
+
+let rec replace (env : (vname * tp) list) (var : vname) (typ : expr) : environment -> match env with
+              |[] -> []
+              |(name,typp)::l -> if name = var then [(var,(tp_expr typ))]::replace  else [(name,typp)]::replace l var typ
+
 let rec tp_stmt ((env, t, returned) : (environment * tp * bool)) stm : (environment * tp * bool) = match (stm,returned) with 
               | (_,true) -> raise Code_inatteignable
               | (Block l,false) -> (etape (env, t, returned) (l))
@@ -109,7 +114,7 @@ let rec tp_stmt ((env, t, returned) : (environment * tp * bool)) stm : (environm
 	                                                |None -> raise Variable_inexistante 
 	                                                |Some t -> t ))
 	                                        |Some t -> t )  
-                                       in if inclu (tp_expr ex) (tipe) then ??? else raise Variable_pas_instancie 
+                                       in if inclu (tp_expr ex) (tipe) then let globa = (replace env.dyn_vars.globals v ex) and loca = (replace env.dyn_vars.locals v ex) in  else raise Variable_pas_instancie 
               |
               |CallS (vn, explist) -> *)
               |_ -> Printf.printf"type inconnu \n";true
