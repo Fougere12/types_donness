@@ -36,12 +36,41 @@ def affichage(nom : string) -> None
   #end
 
 
+def complet(nom : string, n : int) -> Bool
+  #begin
+  a : int
+  x : int
+  a = 1
+  x = 32
+  print(nom)
+  while a<n:
+    #begin
+    if "Yannis"==nom:
+      #begin
+      x = x*2
+      print(x)
+      #end
+    elif "Anais"==nom:
+      #begin
+      x = x/2
+      #end
+    else:
+      #begin
+      if x==16 and a==16:
+        #begin
+        return True
+        #end
+      else:
+        #begin
+        print("pas encore bon")
+        #end
+      #end
+    a=a*2
+    #end
+  return x==a
+  #end
+      
+      
+    print(nom)
 
 
-
-
-
-
-
-
-  
