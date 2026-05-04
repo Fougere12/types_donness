@@ -91,7 +91,7 @@ let rec tp_expr (env : environment) (exp : expr) : tp = match exp with
               |BinOp (b, e1, e2) -> (compatible b (tp_expr env e1) (tp_expr env e1))
               |CallE (v,l) -> let looking = (look2 env.fdecls v) in (match looking with
 	                                        |None -> raise Fonction_non_def
-	                                        |Some (tplist, tpretour) -> if (inclu (List.map tp_expr l) (tplist)) then tpretour else raise Argument_incorect)
+	                                        |Some (tplist, tpretour) -> if (inclu2 (List.map tp_expr l) (tplist)) then tpretour else raise Argument_incorect)
 
 exception Code_inatteignable
 exception Variable_pas_instancie
@@ -116,7 +116,10 @@ let rec tp_stmt ((env, t, returned) : (environment * tp * bool)) stm : (environm
 	                                        |Some t -> t )  
                                        in if inclu (tp_expr ex) (tipe) then let globa = (replace env.dyn_vars.globals v ex) and loca = (replace env.dyn_vars.locals v ex) in  else raise Variable_pas_instancie 
               |
-              |CallS (vn, explist) -> *)
+              |Return (expre) -> (env, (tp_expr expre), true)
+              |CallS (vn, explist) -> let looking = (look2 env.fdecls vn) in (match looking with
+	                                        |None -> raise Fonction_non_def
+	                                        |Some (tplist, tpretour) -> if (inclu2 (List.map (tp_expr) (explist)) (tplist)) then (env, t, returned) else raise Argument_incorect)
               |_ -> Printf.printf"type inconnu \n";true
 
 			
