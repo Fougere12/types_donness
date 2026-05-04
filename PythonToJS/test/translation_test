@@ -45,25 +45,22 @@ def complet(nom : string, n : int) -> Bool
   print(nom)
   while a<n:
     #begin
-    if "Yannis"==nom:
+    if "Yannis"==nom or "Anais":
       #begin
       x = x*2
       print(x)
       #end
-    elif "Anais"==nom:
+    else:
       #begin
       x = x/2
       #end
-    else:
-      #begin
-      if x==16 and a==16:
+    if x==16 and a==16:
         #begin
         return True
         #end
-      else:
-        #begin
-        print("pas encore bon")
-        #end
+    else:
+      #begin
+      print("pas encore bon")
       #end
     a=a*2
     #end
@@ -71,6 +68,5 @@ def complet(nom : string, n : int) -> Bool
   #end
       
       
-    print(nom)
 
 
