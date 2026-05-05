@@ -68,8 +68,16 @@ let rec appartient (liste : base_tp list) (element : base_tp)  = match liste wit
   |[] -> false
   |a::l -> if ((element = a) || (element = IntT && a = FloatT) || (element  = BoolT && (a = IntT || a = FloatT))) then true else appartient (l) (element) ;;
 
+let rec union (t : tp) (g : tp) : tp = let UnionT(l) = t and UnionT(m) = g in match l with 
+              |[] -> UnionT(m)
+              |a::l -> if appartient (m) (a) then union (UnionT(l)) (g) else union (UnionT(l)) (UnionT([a]@m))
+
 let inclu (expression: tp) (general : tp) = total (let UnionT(m) = expression in let UnionT(l) = general in (List.map (appartient (l)) (m)))
 
+let rec inclu2 (ex : tp list) (gen : tp list) = let rec uni (e : tp list) = (match e with 
+                                                                          |[a]-> a
+                                                                          |[] -> UnionT([NoneT])
+                                                                          |a::l -> union (a) (uni l)) in inclu (uni ex) (uni gen)
 
 exception Variable_inexistante;;
 exception Erreur_type;;
@@ -91,30 +99,34 @@ let rec tp_expr (env : environment) (exp : expr) : tp = match exp with
               |BinOp (b, e1, e2) -> (compatible b (tp_expr env e1) (tp_expr env e1))
               |CallE (v,l) -> let looking = (look2 env.fdecls v) in (match looking with
 	                                        |None -> raise Fonction_non_def
-	                                        |Some (tplist, tpretour) -> if (inclu2 (List.map tp_expr l) (tplist)) then tpretour else raise Argument_incorect)
+	                                        |Some (tplist, tpretour) -> if (inclu2 (List.map (tp_expr env) (l)) (tplist)) then tpretour else raise Argument_incorect)
 
 exception Code_inatteignable
 exception Variable_pas_instancie
 exception Fonction_mal_def
-
-let rec etape ((env, retour, returnn) : (environment * tp * bool)) liste = match liste with 
-          |[] -> (env, retour, returnn)
-          |stm::l -> etape (tp_stmt stm) (l) ;;
+exception Condition_doit_etre_un_bool
 
 
-let rec replace (env : (vname * tp) list) (var : vname) (typ : expr) : environment -> match env with
+let rec replace (glob : environment) (env : (vname * tp) list) (var : vname) (typ : expr) = match env with
               |[] -> []
-              |(name,typp)::l -> if name = var then [(var,(tp_expr typ))]::replace  else [(name,typp)]::replace l var typ
+              |(name,typp)::l -> if name = var then [(var,(tp_expr glob typ))]@replace glob l var typ else [(name,typp)]@replace glob l var typ
 
-let rec union (t : tp) (g : tp) : tp = let UnionT(l) = t and UnionT(m) = g  match l with 
-              |[] -> UnionT(m)
-              |a::l -> if appartient (g) (a) then union (UnionT(l)) (g) else union (UnionT(l)) (UnionT([a]::m))
-  
-let rec fusion (env : environment) (si : stmt) (alors : stmt) : environment = let (env1, t1, ret1) = tp_stmt (env, UnionT[NoneT],false) (si) and (env2, t2, ret2) = tp_stmt (env, UnionT[NoneT],false) (alors) in
-              let fu =  in
-                (fu, union t1 t2, ret1 && ret2)
+let rec appar (v : vname) (tii : tp) (j : (vname * tp) list) = match j with 
+          |[] -> []
+          |(vn,ti)::l -> if vn = v then ([(vn,union ti tii)]@l) else ([(vn,ti)]@(appar v tii l))
 
-let rec tp_stmt ((env, t, returned) : (environment * tp * bool)) stm : (environment * tp * bool) = match (stm,returned) with 
+let rec fu2 (l1 : (vname * tp) list) (l2 : (vname * tp) list) : ((vname * tp) list) = match l1 with 
+                      |[] -> []
+                      |(vna,tiipe)::g -> (appar vna tiipe l2)@(fu2 g l2)
+
+let rec fu (env1 : environment) (env2 : environment) : environment = match env1,env2 with
+                              |_,_ -> {fdecls= env1.fdecls;static_vars= env1.static_vars;dyn_vars= { globals = (fu2 (env1.dyn_vars.globals) (env2.dyn_vars.globals)) ; locals =  (fu2 (env1.dyn_vars.locals) (env2.dyn_vars.locals)) };curfun= env1.curfun;}
+
+
+
+let rec tp_stmt ((env, t, returned) : (environment * tp * bool)) stm : (environment * tp * bool) = let rec etape ((env, retour, returnn) : (environment * tp * bool)) liste = match liste with 
+          |[] -> (env, retour, returnn)
+          |stm::l -> etape (tp_stmt (env, retour, returnn) stm) (l) in match (stm,returned) with 
               | (_,true) -> raise Code_inatteignable
               | (Block l,false) -> (etape (env, t, returned) (l))
               | (Assign (v,ex),false) -> let tipe = let looking = (look env.static_vars.locals v) in (match looking with
@@ -122,21 +134,25 @@ let rec tp_stmt ((env, t, returned) : (environment * tp * bool)) stm : (environm
 	                                                |None -> raise Variable_inexistante 
 	                                                |Some t -> t ))
 	                                        |Some t -> t )  
-                                       in if inclu (tp_expr ex) (tipe) then let globa = (replace env.dyn_vars.globals v ex) and loca = (replace env.dyn_vars.locals v ex) in 
-                                       ({fdecls: env.fdecls;static_vars: env.static_vars;dyn_vars: { globals = globa; locals = loca };curfun: env.curfun;},t,returned)
+                                       in if inclu (tp_expr env ex) (tipe) then let globa = (replace env env.dyn_vars.globals v ex) and loca = (replace env env.dyn_vars.locals v ex) in 
+                                       let new_env = {fdecls= env.fdecls;static_vars= env.static_vars;dyn_vars= { globals = globa; locals = loca };curfun= env.curfun;} in
+                                       (new_env,t,returned)
                                        else raise Variable_pas_instancie
-              |
-			  |Cond (e,s1,s2)  -> if inclu (tp_expr e) UnionT([BoolT]) then (fusion env s1 s2,t,returned) else raise Condition_doit_etre_un_bool
-              |Return (expre) -> (env, (tp_expr expre), true)
-              |CallS (vn, explist) -> let looking = (look2 env.fdecls vn) in (match looking with
+              
+			        |(Cond (e,s1,s2),false)  -> let rec fusion (env : environment) (si : stmt) (alors : stmt) : (environment * tp * bool) = 
+              let (env1, t1, ret1) = tp_stmt (env, UnionT[NoneT],false) (si) and (env2, t2, ret2) = tp_stmt (env, UnionT[NoneT],false) (alors) 
+              in (fu (env1) (env2), union t1 t2, ret1 && ret2) in if (inclu (tp_expr env e) (UnionT([BoolT]))) then fusion env s1 s2 else raise Condition_doit_etre_un_bool
+              |(While(e,s),false) -> if (inclu (tp_expr env e) (UnionT([BoolT]))) then  else raise Condition_doit_etre_un_bool
+              |(Return (expre),false) -> (env, (tp_expr env expre), true)
+              |(CallS (vn, explist),false) -> let looking = (look2 env.fdecls vn) in (match looking with
 	                                        |None -> raise Fonction_non_def
-	                                        |Some (tplist, tpretour) -> if (inclu2 (List.map (tp_expr) (explist)) (tplist)) then (env, t, returned) else raise Argument_incorect)
-              |_ -> Printf.printf"type inconnu \n";true
+	                                        |Some (tplist, tpretour) -> if (inclu2 (List.map (tp_expr env) (explist)) (tplist)) then (env, t, returned) else raise Argument_incorect)
+              (*|_,_ -> Printf.printf"type inconnu \n";(env, t, returned) *)
 
 			
 
 
-let tp_fundefn (env_init : environment) (funn : (fundecl * (vardecl list) * stmt)) = let (f, vds, s ) =funn in let (fn, pards, rt) = f in let retour = (tp_stmt (env_init) (s) ) in (inclu retour rt);;
+let tp_fundefn (env_init : environment) (funn : (fundecl * (vardecl list) * stmt)) = let (f, vds, s ) =funn in let Fundecl(fn, pards, rt) = f in let (envr,retour,returne) = (tp_stmt (env_init,UnionT([NoneT]),false) (s) ) in (inclu retour rt);;
 
   (* Function declarations of library / predefined functions *)
 let library_fds = [
@@ -146,25 +162,33 @@ let library_fds = [
   ; ("str",   ([UnionT[BoolT; FloatT; IntT; StringT]], UnionT[StringT]))
   ]
 
-let maj_env_fonc (list_fonc : fundefn list) = match list_fonc with 
+
+let rec varcl_to_list (p : vardecl list) : ((vname * tp) list) = match p with
+                      |[]-> []
+                      |Vardecl(a,b)::l -> [(a,b)]@(varcl_to_list l)
+
+let rec typage (v : vardecl list) : (tp list) = match v with
+                      |[]-> []
+                      |Vardecl(v,t)::l -> [t]@(typage l)
+
+let rec maj_env_fonc (list_fonc : fundefn list) : (string*(tp list*tp)) list= match list_fonc with 
                   |[] -> []
-                  |((Fundecl(fn, pards, rt), vds, s))::reste ->let init_env = 
-                                {fdecls = [] @ library_fds; static_vars = { globals = []; locals = pards @ vds }; dyn_vars = { globals = []; locals = pards @ vds}; curfun = None } 
+                  |Fundefn(prems, vds, s)::reste ->let Fundecl(fn, pards, rt) = prems in let init_env = 
+                                {fdecls = [] @ library_fds; static_vars = { globals = []; locals = varcl_to_list (pards @ vds) }; dyn_vars = { globals = []; locals = varcl_to_list (pards @ vds)}; curfun = None} 
                               in
                                 if duplicate_free (List.map fst init_env.static_vars.locals) && (tp_fundefn (init_env) ((Fundecl(fn, pards, rt), vds, s))) 
-                                    then [(fn,pards,rt)]::maj_env_fonc (reste)
+                                    then [(fn,(typage pards,rt))]@maj_env_fonc (reste)
                                     else raise Fonction_mal_def
                    
 
 (* The following has to be defined in detail *)
-let tp_prog (Prog(fdefns, vds, s)) = 
+let rec tp_prog (Prog(fdefns, vds, s)) = 
   let fds = (maj_env_fonc fdefns) in
-  let globs = vds in
+  let globs = varcl_to_list (vds) in
   let init_venv = { globals = globs; locals = [] } in 
   let init_env = 
     { fdecls = fds @ library_fds; static_vars = init_venv; dyn_vars = init_venv; curfun = None } in
   if duplicate_free (List.map fst fds) 
-    && duplicate_free (List.map fst globs) 
-  && List.for_all (tp_fundefn init_env) fdefns
+    && duplicate_free (List.map fst globs)
   then tp_stmt (init_env, UnionT[NoneT], false) s
   else failwith "duplicate function or variable declarations";;
