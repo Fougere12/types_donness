@@ -142,11 +142,12 @@ let rec tp_stmt ((env, t, returned) : (environment * tp * bool)) stm : (environm
 			        |(Cond (e,s1,s2),false)  -> let rec fusion (env : environment) (si : stmt) (alors : stmt) : (environment * tp * bool) = 
               let (env1, t1, ret1) = tp_stmt (env, UnionT[NoneT],false) (si) and (env2, t2, ret2) = tp_stmt (env, UnionT[NoneT],false) (alors) 
               in (fu (env1) (env2), union t1 t2, ret1 && ret2) in if (inclu (tp_expr env e) (UnionT([BoolT]))) then fusion env s1 s2 else raise Condition_doit_etre_un_bool
-              |(While(e,s),false) ->let rec egal = ?? in let rec kaneki ((env, t, returned) : environment*tp*bool) (stmm : stmt) (i : int): (environment*tp*bool) -> 	let (a,b,c) = (tp_stmt (env, t, returned) stmm) in if (egal a env) 
+              |(While(e,s),false) ->let rec egal (en1 : environment) (en2 : environment) : bool = en1.dyn_vars.globals = en2.dyn_vars.globals && en1.dyn_vars.locals = en2.dyn_vars.locals
+			  in let rec kaneki ((env, t, returned) : environment*tp*bool) (stmm : stmt) (i : int): (environment*tp*bool) -> 	let (a,b,c) = (tp_stmt (env, t, returned) stmm) in if (egal a env) 
                                                                                                                                                                   then (if i > 1 
                                                                                                                                                                     then (a,b,c) 
-                                                                                                                                                                    else (kaneki (a, b, c) s (i+1))) 
-                                                                                                                                                                  else (kaneki (a, b, c) s (i)) 
+                                                                                                                                                                    else (kaneki (a, b, returned) s (i+1))) 
+                                                                                                                                                                  else (kaneki (a, b, returned) s (i)) 
                                     in if (inclu (tp_expr env e) (UnionT([BoolT]))) then (kaneki (env, t, returned) s 0) else raise Condition_doit_etre_un_bool
               |(Return (expre),false) -> (env, (tp_expr env expre), true)
               |(CallS (vn, explist),false) -> let looking = (look2 env.fdecls vn) in (match looking with
