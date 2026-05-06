@@ -85,9 +85,9 @@ exception Fonction_non_def;;
 exception Argument_incorect;;
 
 let rec compatible ( b : binop) (t1 : tp) (t2 : tp) = match b with 
-                    | BArith ba -> if t1 = t2 then t1 else raise Erreur_type
-                    | BBool bb -> if t1 = t2 && t1 = UnionT([BoolT]) then UnionT([BoolT]) else raise Erreur_type
-                    | BCompar bc -> if t1 = t2 then UnionT([BoolT]) else raise Erreur_type;;
+                    | BArith ba -> if inclu t1 t2 || inclu t2 t1 then t1 else raise Erreur_type
+                    | BBool bb -> if (inclu UnionT([BoolT]) t1 && inclu UnionT([BoolT]) t2) then UnionT([BoolT]) else raise Erreur_type
+                    | BCompar bc -> if inclu t1 t2 || inclu t2 t1 then UnionT([BoolT]) else raise Erreur_type;;
 
 let rec tp_expr (env : environment) (exp : expr) : tp = match exp with
               | Const (v) -> UnionT ([tp_const(v)])
