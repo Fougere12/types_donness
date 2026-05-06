@@ -19,6 +19,7 @@ def condition(n : int) -> bool:
     #end
   #end
 
+
 def boucle_while(n : int) -> int:
   #begin
   a : int
@@ -27,14 +28,15 @@ def boucle_while(n : int) -> int:
     #begin  
     a = a + 1
     #end
+  return a
   #end
 
-def affichage(nom : str) -> None
+
+def affichage(nom : str) -> None:
   #begin
-  print("bonjour")
+  print("Bonjour")
   print(nom)
   #end
-
 
 def complet(nom : str, n : int) -> bool
   #begin
