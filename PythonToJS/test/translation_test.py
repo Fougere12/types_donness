@@ -62,9 +62,6 @@ def complet(nom : str, n : int) -> bool:
   #end
 
 
-      
-
-
 def division_euclidienne(a : int, b : int) -> int:
   #begin
   q : int
@@ -80,3 +77,10 @@ def division_euclidienne(a : int, b : int) -> int:
 
   return q
   #end
+
+
+def test_div() -> int:
+  #begin
+  return division_euclidienne(8, 4)
+  #end 
+
