@@ -1,8 +1,4 @@
-def f(x : int) -> int
-  #begin
-  return x
-  #end
-
 x : int
-x = 4
+x = 2
 print(g(x))
+
