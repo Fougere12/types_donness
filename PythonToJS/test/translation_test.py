@@ -38,16 +38,17 @@ def affichage(nom : str) -> None:
   print(nom)
   #end
 
-def complet(nom : str, n : int) -> bool
+
+def complet(nom : str, n : int) -> bool:
   #begin
   a : int
-  x : int
+  x : float
   a = 1
   x = 32
   print(nom)
   while a<n:
     #begin
-    if "Yannis"==nom or "Anais":
+    if (nom == "Yannis" or nom == "Anais"):
       #begin
       x = x*2
       print(x)
@@ -56,7 +57,7 @@ def complet(nom : str, n : int) -> bool
       #begin
       x = x/2
       #end
-    if x==16 and a==16:
+    if (x==16 and a==16):
         #begin
         return True
         #end
@@ -69,7 +70,6 @@ def complet(nom : str, n : int) -> bool
   return x==a
   #end
       
-
 
 
 def division_euclidienne(a : int, b : int) -> int:
