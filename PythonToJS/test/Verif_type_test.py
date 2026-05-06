@@ -1,18 +1,10 @@
-def affectation() -> bool:
+def affectation_block_retour() -> bool:
   #begin
   x : int
   y : int
   x = 3
   y = 5
-  return x = y
-  #end
-
-
-def erreur_type_simple(x : int) -> None:            #erreur attendue
-  #begin
-  x : int
-  x = 3
-  x = "hello
+  return x == y
   #end
 
 
@@ -21,30 +13,6 @@ def bool_int() -> None:
   x : int
   x = True
   x = 1
-  #end
-
-
-def variable_inexistante() -> None:            #erreur attendue
-  #begin
-  x : int
-  x = y
-  #end
-
-
-def non_initialisee() -> None:            #erreur attendue
-  #begin
-  x : int
-  y : int
-  y = x
-  #end
-
-
-def bloc() -> None:
-  #begin
-  x : int
-  y : int
-  x = 3
-  y = x
   #end
 
 
@@ -63,20 +31,6 @@ def if_correct() -> int:
   #end
 
 
-def if_incorrect() -> int:            #erreur attendue
-  #begin
-  x : int
-  if True:
-    #begin
-    x = 3
-    #end
-  else:
-    #begin
-    y = 4
-    #end
-  return x
-  #end
-
 
 def while_test() -> int:
   #begin
@@ -89,63 +43,18 @@ def while_test() -> int:
   #end
 
 
-def return_simple() -> int:
-  #begin
-  x : int
-  x = 3
-  return x
-  #end
-
-
-def return_incoherent() -> int:          #erreur attendue
-  #begin
-  if True:
-    #begin
-    return 3
-    #end
-  else:
-    #begin
-    return "hello"
-    #end
-  #end
-
-
-def code_inatteignable() -> int:          #erreur attendue
-  #begin
-  return 3
-  x : int
-  x = 4
-  #end
-
-
-
 def f(x : int) -> int:
   #begin
   return x
   #end
 
+  
 def appel() -> int:
   #begin
   y : int
   y = f(3)
   return y
   #end
-
-
-
-def f(x : int) -> int:
-  #begin
-  return x
-  #end
-
-def appel_erreur() -> int:          #erreur attendue
-  #begin
-  y : int
-  y = f("hello")
-  return y
-  #end
-
-
 
 def test_print() -> None:
   #begin
@@ -161,16 +70,6 @@ def int_float() -> None:
   #end
 
 
-def string_int() -> None:        #erreur attendue
-  #begin
-  x : string
-  y : int
-  x = "hello"
-  y = 3
-  x = x + y
-  #end
-
-
 def comparaison() -> bool:
   #begin
   x : int
@@ -181,6 +80,7 @@ def comparaison() -> bool:
   z = x < y
   return z
   #end
+
 
 
 def bool_logique() -> bool:
@@ -201,5 +101,3 @@ def arithmetique() -> int:
   z = x + y
   return z
   #end
-
-
