@@ -90,13 +90,3 @@ def division_euclidienne(a : int, b : int) -> int:
 
   return q
   #end
-
-
-
-def test_div() -> int:
-  #begin
-  x : int
-  x = div(10, 3)
-  print(x)
-  return x
-  #end
