@@ -143,7 +143,7 @@ let rec tp_stmt ((env, t, returned) : (environment * tp * bool)) stm : (environm
               let (env1, t1, ret1) = tp_stmt (env, UnionT[NoneT],false) (si) and (env2, t2, ret2) = tp_stmt (env, UnionT[NoneT],false) (alors) 
               in (fu (env1) (env2), union t1 t2, ret1 && ret2) in if (inclu (tp_expr env e) (UnionT([BoolT]))) then fusion env s1 s2 else raise Condition_doit_etre_un_bool
               |(While(e,s),false) ->let rec egal (en1 : environment) (en2 : environment) : bool = en1.dyn_vars.globals = en2.dyn_vars.globals && en1.dyn_vars.locals = en2.dyn_vars.locals
-			  in let rec kaneki ((env, t, returned) : environment*tp*bool) (stmm : stmt) (i : int): (environment*tp*bool) -> 	let (a,b,c) = (tp_stmt (env, t, returned) stmm) in if (egal a env) 
+			  in let rec kaneki ((env, t, returned) : environment*tp*bool) (stmm : stmt) (i : int): (environment*tp*bool) =	let (a,b,c) = (tp_stmt (env, t, returned) stmm) in if (egal a env) 
                                                                                                                                                                   then (if i > 1 
                                                                                                                                                                     then (a,b,c) 
                                                                                                                                                                     else (kaneki (a, b, returned) s (i+1))) 
