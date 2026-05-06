@@ -85,8 +85,5 @@ def division_euclidienne(a : int, b : int) -> int:
     q = q + 1
     #end
 
-  print(q)
-  print(r)
-
   return q
   #end
