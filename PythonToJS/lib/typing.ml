@@ -177,19 +177,19 @@ let rec typage (v : vardecl list) : (tp list) = match v with
                       |[]-> []
                       |Vardecl(v,t)::l -> [t]@(typage l)
 
-let rec maj_env_fonc (list_fonc : fundefn list) : (string*(tp list*tp)) list= match list_fonc with 
+let rec maj_env_fonc (list_fonc : fundefn list) (fonc_def : ((string*(tp list*tp)) list)) : ((string*(tp list*tp)) list)= match list_fonc with 
                   |[] -> []
                   |Fundefn(prems, vds, s)::reste ->let Fundecl(fn, pards, rt) = prems in let init_env = 
-                                {fdecls = [] @ library_fds; static_vars = { globals = []; locals = varcl_to_list (pards @ vds) }; dyn_vars = { globals = []; locals = varcl_to_list (pards @ vds)}; curfun = None} 
+                                {fdecls = fonc_def @ library_fds; static_vars = { globals = []; locals = varcl_to_list (pards @ vds) }; dyn_vars = { globals = []; locals = varcl_to_list (pards @ vds)}; curfun = None} 
                               in
                                 if duplicate_free (List.map fst init_env.static_vars.locals) && (tp_fundefn (init_env) ((Fundecl(fn, pards, rt), vds, s))) 
-                                    then [(fn,(typage pards,rt))]@maj_env_fonc (reste)
+                                    then [(fn,(typage pards,rt))]@(maj_env_fonc (reste) ([(fn,(typage pards,rt))]@fonc_def))
                                     else raise Fonction_mal_def
                    
 
 (* The following has to be defined in detail *)
 let rec tp_prog (Prog(fdefns, vds, s)) = 
-  let fds = (maj_env_fonc fdefns) in
+  let fds = (maj_env_fonc fdefns []) in
   let globs = varcl_to_list (vds) in
   let init_venv = { globals = globs; locals = [] } in 
   let init_env = 
