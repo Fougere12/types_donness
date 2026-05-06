@@ -11,11 +11,11 @@ def condition(n : int) -> bool:
   a = 3
   if a<n:
     #begin
-    return true
+    return True
     #end
   else:
     #begin
-    return true
+    return False
     #end
   #end
 
@@ -29,14 +29,14 @@ def boucle_while(n : int) -> int:
     #end
   #end
 
-def affichage(nom : string) -> None
+def affichage(nom : str) -> None
   #begin
   print("bonjour")
   print(nom)
   #end
 
 
-def complet(nom : string, n : int) -> Bool
+def complet(nom : str, n : int) -> bool
   #begin
   a : int
   x : int
@@ -98,4 +98,3 @@ def test_div() -> int:
   print(x)
   return x
   #end
-
